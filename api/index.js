@@ -220,12 +220,13 @@ a.btn{display:inline-block;margin-top:12px;padding:10px 14px;background:#111827;
   .pix-input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;color:#6b7280;margin:12px 0 8px}
   .copy-button{
     width:100%;padding:12px;border:none;border-radius:8px;
-    background:#3483fa;color:#d1d5db;font-weight:600;cursor:pointer;
+    background:#3483fa;color:#fff; /* texto branco */
+    font-weight:600;cursor:pointer;
     display:flex;align-items:center;justify-content:center;transition:background-color .2s}
-  .copy-button:hover{background:#111827}
-  .copy-button[disabled]{background:#111827;opacity:.9;cursor:pointer}
-</style>
+  .copy-button:hover{background:#111827;color:#fff}
+  .copy-button[disabled]{background:#111827;opacity:.9;cursor:pointer;color:#fff}
 
+  /* Estes eram os que estavam “vazando” no topo */
   .instructions{margin-top:24px}
   .instruction-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
   .instruction-item svg{flex-shrink:0;color:#6b7280}
