@@ -199,7 +199,7 @@ a.btn{display:inline-block;margin-top:12px;padding:10px 14px;background:#111827;
   .top-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:12px 0;}
   .top-bar-content{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;justify-content:space-between;align-items:center}
   .logo{height:32px}
-  .secure-badge{display:flex;align-items:center;color:#FA0000;font-size:14px;font-weight:500}
+  .secure-badge{display:flex;align-items:center;color:#fbe203;font-size:14px;font-weight:500}
   .secure-badge svg{margin-right:8px}
 
   .container{max-width:28rem;margin:0 auto;padding:16px}
@@ -212,15 +212,19 @@ a.btn{display:inline-block;margin-top:12px;padding:10px 14px;background:#111827;
 
   .pix-value{margin-bottom:12px;text-align:center}
   .pix-value p{margin:0}
-  .pix-amount{color:#FA0000;font-size:24px;font-weight:bold;margin-top:4px}
+  .pix-amount{color:#fbe203;font-size:24px;font-weight:bold;margin-top:4px}
 
   .countdown{color:#6b7280;font-size:14px;text-align:center;margin:8px 0 16px}
   .expired{opacity:.2;filter:grayscale(1)}
 
   .pix-input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;color:#6b7280;margin:12px 0 8px}
-  .copy-button{width:100%;padding:12px;border:none;border-radius:8px;background:#FA0000;color:#fff;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background-color .2s}
-  .copy-button:hover{background:#d10000}
+  .copy-button{
+    width:100%;padding:12px;border:none;border-radius:8px;
+    background:#fbe203;color:#111827;font-weight:600;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;transition:background-color .2s}
+  .copy-button:hover{background:#e6cc00}
   .copy-button[disabled]{background:#111827;opacity:.9;cursor:pointer}
+</style>
 
   .instructions{margin-top:24px}
   .instruction-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
