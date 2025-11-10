@@ -1,11 +1,10 @@
-# Update index.html to call the local PHP proxy and improve catch error visibility.
-html_content = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rastreamento - Jadlog</title>
-  <meta name="description" content="Rastreamento de encomendas na Jadlog. Acompanhe o status da sua entrega de forma rápida e segura." />
+  <title>Rastreamento - Mercado Livre</title>
+  <meta name="description" content="Rastreamento de encomendas no Mercado Livre. Acompanhe o status da sua entrega de forma rápida e segura." />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -29,8 +28,8 @@ html_content = """<!DOCTYPE html>
       box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
     }
     .btn-primary {
-      background-color: #fbe203;
-      color: black;
+      background-color: #3483fa;
+      color: white;
       font-weight: bold;
       border: none;
       padding: 8px 0;
@@ -53,7 +52,7 @@ html_content = """<!DOCTYPE html>
   <!-- Header -->
   <header class="bg-white border-b shadow-md p-3 fixed top-0 left-0 right-0 z-[150]">
     <nav class="max-w-6xl mx-auto flex items-center justify-center">
-      <a href="/" aria-label="Página Inicial da Jadlog" class="flex items-center justify-center">
+      <a href="/" aria-label="Página Inicial do Mercado Livre" class="flex items-center justify-center">
         <img src="images/logo.png" alt="Logo da Jadlog" class="h-8" loading="lazy" />
       </a>
     </nav>
@@ -96,7 +95,7 @@ html_content = """<!DOCTYPE html>
   <!-- Footer -->
   <footer class="bg-gray-900 mt-auto">
     <div class="max-w-6xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-white">
-      <p class="text-center text-sm">© 2024 Jadlog - Todos os direitos reservados</p>
+      <p class="text-center text-sm">© 2025 Mercado Livre - Todos os direitos reservados</p>
     </div>
   </footer>
 
