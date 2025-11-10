@@ -1,11 +1,11 @@
 // /api/index.js
-// ÚNICO ARQUIVO: HTML + cria transação PIX + consulta status (BestFyBR)
+// ÚNICO ARQUIVO: HTML + cria transação PIX + consulta status (Duttyfy)
 // Versão "blindada" + contador 3min + expiração com regeneração
 
 module.exports = async function handler(req, res) {
   try {
-    const BESTFY_SECRET = process.env.BESTFY_SECRET || "";
-    const BESTFY_BASE = "https://app.duttyfy.com.br/api-pix/";
+    const DUTTYFY_KEY = process.env.DUTTYFY_KEY || ""; // sua_chave_encriptada
+    const DUTTYFY_BASE = "https://app.duttyfy.com.br/api-pix/";
 
     // Helpers ----------
     const respondJSON = (obj, code = 200) => {
@@ -51,76 +51,78 @@ module.exports = async function handler(req, res) {
         const id = String(req.query.id || "");
         if (!id) return respondJSON({ ok: false, error: "ID ausente" });
 
-        if (!BESTFY_SECRET) {
-          return respondJSON({ ok: false, error: "BESTFY_SECRET não configurada" });
+        if (!DUTTYFY_KEY) {
+          return respondJSON({ ok: false, error: "DUTTYFY_KEY não configurada" });
         }
 
-        const auth = "Basic " + Buffer.from(`${BESTFY_SECRET}:x`).toString("base64");
-        const r = await safeFetch(`${BESTFY_BASE}/transactions/${encodeURIComponent(id)}`, {
-          headers: { Authorization: auth },
-        });
+        // GET https://app.duttyfy.com.br/api-pix/{KEY}?transactionId={id}
+        const url = `${DUTTYFY_BASE}${encodeURIComponent(DUTTYFY_KEY)}?transactionId=${encodeURIComponent(id)}`;
+        const r = await safeFetch(url, { method: "GET" });
 
-        if (!r.ok) {
+        if (!r.ok || r.data?.error) {
           log("status-fetch-fail", r.status, r.data);
           return respondJSON({ ok: false, error: "Falha ao consultar status", details: r.data });
         }
 
-        const status = r.data?.status || r.data?.transaction?.status || "UNKNOWN";
-        return respondJSON({ ok: true, status, raw: r.data });
+        const status = r.data?.status || "UNKNOWN"; // "PENDING" | "COMPLETED"
+        const paidAt = r.data?.paidAt || null;
+        return respondJSON({ ok: true, status, paidAt, raw: r.data });
       } catch (e) {
         log("status-catch", e);
         return respondJSON({ ok: false, error: String(e) });
       }
     }
 
-    // 2) Geração de PIX + HTML: /api/index?nome=&cpf=&value=
+    // 2) Geração de PIX + HTML: /api/index?nome=&cpf=&value=&phone=&utm=
     const nome = (req.query.nome || "").toString().trim();
     const cpf = (req.query.cpf || "").toString().replace(/\D/g, "");
     const value = Number(req.query.value || 0); // em centavos (ex.: 6780)
+    const phone = (req.query.phone || "").toString().replace(/\D/g, ""); // opcional
+    const utm = (req.query.utm || "").toString(); // opcional
 
     if (nome && cpf && value > 0) {
       try {
-        if (!BESTFY_SECRET) {
+        if (!DUTTYFY_KEY) {
           return renderErrorHTML(
             "Configuração ausente",
-            "A variável BESTFY_SECRET não está configurada no Vercel."
+            "A variável DUTTYFY_KEY não está configurada no ambiente."
           );
         }
 
+        // E-mail fake (se não vier do form) para cumprir requisito da API
         const email =
           `${nome.toLowerCase().replace(/\s+/g, "")}${Math.floor(Math.random() * 9000 + 1000)}@gmail.com`;
 
+        // Fallback simples para phone: obrigatório pela nova API
+        const phoneSanitized = phone && phone.length >= 10 ? phone : "11900000000";
+
+        // Payload Duttyfy
         const payload = {
-          amount: Math.round(value),
-          paymentMethod: "pix",
+          amount: Math.round(value),                    // centavos
+          description: "Pagamento via Pix",
           customer: {
             name: nome,
+            document: cpf,                              // 11 dígitos
             email,
-            document: { number: cpf, type: "cpf" },
+            phone: phoneSanitized
           },
-          items: [
-            {
-              title: "Taxa EMEX",
-              unitPrice: Math.round(value),
-              quantity: 1,
-              tangible: false,
-            },
-          ],
-          pix: { expiresInDays: 1 },
+          item: {
+            title: "Taxa EMEX",
+            price: Math.round(value),                   // centavos
+            quantity: 1
+          },
+          paymentMethod: "PIX",
+          ...(utm ? { utm } : {})
         };
 
-        const auth = "Basic " + Buffer.from(`${BESTFY_SECRET}:x`).toString("base64");
-
-        const r = await safeFetch(`${BESTFY_BASE}/transactions`, {
+        // POST https://app.duttyfy.com.br/api-pix/{KEY}
+        const r = await safeFetch(`${DUTTYFY_BASE}${encodeURIComponent(DUTTYFY_KEY)}`, {
           method: "POST",
-          headers: {
-            Authorization: auth,
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
 
-        if (!r.ok || !r.data?.id) {
+        if (!r.ok || r.data?.error || (!r.data?.pixCode || !r.data?.transactionId)) {
           log("create-fail", r.status, r.data);
           return renderErrorHTML(
             "Não foi possível gerar o PIX",
@@ -128,17 +130,11 @@ module.exports = async function handler(req, res) {
           );
         }
 
-        const txId = r.data.id;
-        const qrcode = r.data?.pix?.qrcode || "";
-        const qrcodeImage =
-          r.data?.pix?.qrcode_image ||
-          (qrcode
-            ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
-                qrcode
-              )}`
-            : "");
+        const txId = r.data.transactionId;
+        const pixCode = r.data.pixCode; // string completa "copia e cola"
+        const qrcodeImage = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixCode)}`;
 
-        return renderPixHTML({ nome, cpf, value, txId, qrcode, qrcodeImage });
+        return renderPixHTML({ nome, cpf, value, txId, pixCode, qrcodeImage });
       } catch (e) {
         log("pix-catch", e);
         return renderErrorHTML("Erro inesperado", String(e));
@@ -150,7 +146,7 @@ module.exports = async function handler(req, res) {
       return respondJSON({
         ok: true,
         info:
-          "Função ativa. Para gerar PIX, chame /api/index?nome=...&cpf=...&value=6780. Para status: /api/index?action=status&id=...",
+          "Função ativa. Para gerar PIX, chame /api/index?nome=Fulano&cpf=00000000000&value=6780&phone=11999999999. Para status: /api/index?action=status&id=TRANSACAO_ID",
       });
     }
     return respondHTML(`<!doctype html>
@@ -158,8 +154,8 @@ module.exports = async function handler(req, res) {
 <title>API viva</title><style>body{font-family:system-ui,Arial;margin:24px}code{background:#f3f4f6;padding:2px 6px;border-radius:4px}</style></head>
 <body>
   <h1>API viva ✅</h1>
-  <p>Use: <code>/api/index?nome=asdda&amp;cpf=32131231=amp;value=6780</code> para gerar PIX.</p>
-  <p>Status: <code>/api/index?action=status&amp;id=TRANSACAO_ID</code></p>
+  <p>Use: <code>/api/index?nome=Fulano&cpf=00000000000&value=6780&phone=11999999999</code> para gerar PIX.</p>
+  <p>Status: <code>/api/index?action=status&id=TRANSACAO_ID</code></p>
 </body></html>`);
 
     // ---- helpers que precisam do escopo de res ----
@@ -181,7 +177,7 @@ a.btn{display:inline-block;margin-top:12px;padding:10px 14px;background:#111827;
 </body></html>`);
     }
 
-    function renderPixHTML({ nome, cpf, value, txId, qrcode, qrcodeImage }) {
+    function renderPixHTML({ nome, cpf, value, txId, pixCode, qrcodeImage }) {
       const pixAmount = Number(value / 100).toFixed(2).replace(".", ",");
       // params para regenerar
       const params = { nome, cpf, value };
@@ -261,7 +257,7 @@ a.btn{display:inline-block;margin-top:12px;padding:10px 14px;background:#111827;
 
       <div id="qr-container" style="text-align:center; margin:20px 0;">
         <img id="qrImg" src="${qrcodeImage}" alt="QR Code PIX" style="display:block; margin:20px auto;">
-        <input type="text" class="pix-input" value="${escapeHtml(qrcode)}" readonly id="pixCopiaCola">
+        <input type="text" class="pix-input" value="${escapeHtml(pixCode)}" readonly id="pixCopiaCola">
         <button id="copyButton" class="copy-button">Copiar código</button>
       </div>
 
@@ -310,7 +306,7 @@ a.btn{display:inline-block;margin-top:12px;padding:10px 14px;background:#111827;
       try{
         const r = await fetch(${JSON.stringify("/api/index?action=status&id=")} + encodeURIComponent(id));
         const j = await r.json();
-        if(j && j.status === "APPROVED"){
+        if(j && j.status === "COMPLETED"){
           window.location.href = "/obrigado";
           return;
         }
@@ -343,7 +339,7 @@ a.btn{display:inline-block;margin-top:12px;padding:10px 14px;background:#111827;
         }
         if (btn) {
           btn.textContent = "Gerar novamente";
-          btn.disabled = false; // usaremos como CTA de regenerar
+          btn.disabled = false; // CTA de regenerar
           btn.onclick = function(){
             const u = new URL(window.location.href);
             u.search = new URLSearchParams(_params).toString(); // mesma rota, novo PIX
@@ -382,5 +378,3 @@ function maskCpf(cpf) {
   const v = String(cpf).replace(/\D/g, "");
   return v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }
-
-
