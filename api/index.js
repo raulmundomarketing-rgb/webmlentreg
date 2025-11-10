@@ -225,15 +225,6 @@ a.btn{display:inline-block;margin-top:12px;padding:10px 14px;background:#111827;
     display:flex;align-items:center;justify-content:center;transition:background-color .2s}
   .copy-button:hover{background:#111827;color:#fff}
   .copy-button[disabled]{background:#111827;opacity:.9;cursor:pointer;color:#fff}
-
-  /* Estes eram os que estavam “vazando” no topo */
-  .instructions{margin-top:24px}
-  .instruction-item{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
-  .instruction-item svg{flex-shrink:0;color:#6b7280}
-  .instruction-text{color:#6b7280}
-
-  .divider{border-top:1px solid #e5e7eb;margin:24px 0}
-  .small{color:#6b7280;font-size:14px}
 </style>
 </head>
 
