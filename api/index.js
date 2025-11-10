@@ -5,7 +5,7 @@
 module.exports = async function handler(req, res) {
   try {
     const BESTFY_SECRET = process.env.BESTFY_SECRET || "";
-    const BESTFY_BASE = "https://app.duttyfy.com.br/api-pix/sua_chave_encriptada";
+    const BESTFY_BASE = "https://app.duttyfy.com.br/api-pix/";
 
     // Helpers ----------
     const respondJSON = (obj, code = 200) => {
@@ -382,4 +382,5 @@ function maskCpf(cpf) {
   const v = String(cpf).replace(/\D/g, "");
   return v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }
+
 
