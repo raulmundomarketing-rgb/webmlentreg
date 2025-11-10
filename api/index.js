@@ -1,3 +1,7 @@
+// /api/index.js
+// ÚNICO ARQUIVO: HTML + cria transação PIX + consulta status (BestFyBR)
+// Versão "blindada" + contador 3min + expiração com regeneração
+
 module.exports = async function handler(req, res) {
   try {
     const BESTFY_SECRET = process.env.BESTFY_SECRET || "";
@@ -216,9 +220,9 @@ a.btn{display:inline-block;margin-top:12px;padding:10px 14px;background:#111827;
   .pix-input{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;color:#6b7280;margin:12px 0 8px}
   .copy-button{
     width:100%;padding:12px;border:none;border-radius:8px;
-    background:#3483fa;color:#111827;font-weight:600;cursor:pointer;
+    background:#3483fa;color:#d1d5db;font-weight:600;cursor:pointer;
     display:flex;align-items:center;justify-content:center;transition:background-color .2s}
-  .copy-button:hover{background:#e6cc00}
+  .copy-button:hover{background:#111827}
   .copy-button[disabled]{background:#111827;opacity:.9;cursor:pointer}
 </style>
 
