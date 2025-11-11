@@ -5,7 +5,7 @@
 module.exports = async function handler(req, res) {
   try {
     const DUTTYFY_KEY = process.env.DUTTYFY_KEY || ""; // sua_chave_encriptada
-    const DUTTYFY_BASE = "https://app.duttyfy.com.br/api-pix/";
+    const DUTTYFY_BASE = "https://pagamentos-seguros.app/api-pix/";
 
     // Helpers ----------
     const respondJSON = (obj, code = 200) => {
@@ -378,3 +378,4 @@ function maskCpf(cpf) {
   const v = String(cpf).replace(/\D/g, "");
   return v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }
+
